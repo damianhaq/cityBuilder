@@ -33,3 +33,19 @@ export const WORLD_GEN_CONFIG = {
     },
   },
 };
+
+export const PROFESSIONS = {
+  BUILDER: 'builder',
+  LUMBERJACK: 'lumberjack',
+  FARMER: 'farmer',
+  MINER: 'miner',
+  TRADER: 'trader',
+};
+
+export const PROFESSION_COLORS = {
+  [PROFESSIONS.BUILDER]: '#FF6B6B',    // Czerwony - budowniczy
+  [PROFESSIONS.LUMBERJACK]: '#45B7D1', // Niebieski - drwal
+  [PROFESSIONS.FARMER]: '#96CEB4',     // Zielony - farmer
+  [PROFESSIONS.MINER]: '#4ECDC4',      // Turkusowy - górnik
+  [PROFESSIONS.TRADER]: '#FFEEAD',     // Żółty - handlarz
+};

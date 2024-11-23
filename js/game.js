@@ -10,6 +10,9 @@ export class GameMap {
     this.setupKeyboardControls();
     this.loadOrCreateNewGame();
     this.startGameLoop();
+
+    // Dodanie instancji do window dla dostępu z innych klas
+    window.gameInstance = this;
   }
 
   initializeBasicProperties(canvasId, mapWidth, mapHeight) {
@@ -47,26 +50,51 @@ export class GameMap {
     this.map = generator.generateMap();
     this.generateTreePositions();
     this.createInitialCitizens();
-    
+
     // Reset kamery
     this.cameraX = 0;
     this.cameraY = 0;
-    
+
     // Odświeżenie widoku
     this.draw();
   }
 
   createInitialCitizens() {
-    const numCitizens = 10;
-    for (let i = 0; i < numCitizens; i++) {
-      let x, y;
-      do {
-        x = Math.floor(Math.random() * this.mapWidth);
-        y = Math.floor(Math.random() * this.mapHeight);
-      } while (this.map[y][x] === TERRAIN_TYPES.WATER);
+    const centerX = Math.floor(this.map[0].length / 2);
+    const centerY = Math.floor(this.map.length / 2);
 
-      this.citizens.push(new Citizen(x, y, this.map));
+    // Znajdź odpowiednie miejsce startowe (nie w wodzie)
+    let startX = centerX;
+    let startY = centerY;
+    const searchRadius = 5;
+
+    for (let r = 0; r < searchRadius; r++) {
+      for (let dx = -r; dx <= r; dx++) {
+        for (let dy = -r; dy <= r; dy++) {
+          const x = centerX + dx;
+          const y = centerY + dy;
+          if (
+            x >= 0 &&
+            x < this.map[0].length &&
+            y >= 0 &&
+            y < this.map.length
+          ) {
+            if (this.map[y][x] !== TERRAIN_TYPES.WATER) {
+              startX = x;
+              startY = y;
+              r = searchRadius; // Przerwij wszystkie pętle
+              break;
+            }
+          }
+        }
+        if (r === searchRadius) break;
+      }
     }
+
+    // Tworzenie mieszkańców w znalezionym miejscu
+    this.citizens = Array(10)
+      .fill(null)
+      .map(() => new Citizen(startX, startY, this.map, null, this));
   }
 
   generateTreePositions() {
@@ -184,6 +212,7 @@ export class GameMap {
           x: citizen.x,
           y: citizen.y,
           color: citizen.color,
+          profession: citizen.profession,
         })),
       },
       saveName
@@ -208,7 +237,8 @@ export class GameMap {
     // Odtwarzanie mieszkańców
     if (gameState.citizens) {
       this.citizens = gameState.citizens.map(
-        (citizenData) => new Citizen(citizenData.x, citizenData.y, this.map, citizenData.color)
+        (citizenData) =>
+          new Citizen(citizenData.x, citizenData.y, this.map, citizenData.profession, this)
       );
     } else {
       this.createInitialCitizens();
